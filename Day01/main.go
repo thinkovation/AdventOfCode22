@@ -22,13 +22,11 @@ func main() {
 	var individualTotal int
 	for fileScanner.Scan() {
 		if fileScanner.Text() == "" {
-			fmt.Println("BREAK")
 			calarray = append(calarray, individualTotal)
 			individualTotal = 0
 		} else {
 			linevalue, _ := strconv.Atoi(fileScanner.Text())
 			individualTotal = individualTotal + linevalue
-			fmt.Println("[", fileScanner.Text(), "]")
 
 		}
 	}
@@ -50,7 +48,7 @@ func main() {
 
 	}
 	
-	fmt.Println(Top3Total)
+	fmt.Println("The top3 total is :",Top3Total)
 
 	readFile.Close()
 
