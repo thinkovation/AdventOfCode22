@@ -41,13 +41,35 @@ func (fs *FS) CD(path string) {
 	fmt.Println("WOOP")
 	fs.CurrentPath = fs.CurrentPath + path + "/"
 }
+func (fs FS) sizeofcontents(path string) int {
+	var tot int
+	for _, v := range fs.Entries {
+		if len(v.Path) >= len(path) {
+			//fmt.Println(v.Path, path)
+			if string(v.Path[:len(path)]) == path {
+				//	fmt.Println("Matched ", v.Path, " with ", path)
+				tot = tot + v.Size
+
+			}
+		}
+	}
+	return tot
+}
 
 var Root FS
 
 func main() {
-	//fname := "input.txt"
-	fname := "exampleinput.txt"
+	fname := "input.txt"
+	//fname := "exampleinput.txt"
 	Root.CurrentPath = "/"
+	newVal := Object{
+		Name:        "",
+		Size:        0,
+		Path:        Root.CurrentPath,
+		IsDirectory: true,
+	}
+
+	Root.Entries = append(Root.Entries, newVal)
 	readFile, err := os.Open(fname) // just pass the file name
 	if err != nil {
 		fmt.Print(err)
@@ -59,49 +81,65 @@ func main() {
 	for fileScanner.Scan() {
 		line := fileScanner.Text()
 		fmt.Println(line)
-
-		if string(line[:4]) == "$ ls" {
-			fmt.Println("List Directory")
-			fileScanner.Scan()
-			line = fileScanner.Text()
-			if line != "" {
-				fmt.Println("LIne = ", "#"+line+"#")
-				for string(line[0]) != "$" {
-					fmt.Println(line)
-					fileScanner.Scan()
-					line = fileScanner.Text()
-					fmt.Println("LIne = ", "#"+line+"#")
-					fmt.Println("LoL:", len(line))
-					if len(line) == 0 {
-						line = "$"
-						break
-					}
-					if string(line[0]) != "$" && string(line[:2]) != "dir" {
-						els := strings.Split(line, " ")
-						fmt.Println("Length:", els[0], "Name ", els[1], "Fullpath", Root.CurrentPath+els[1])
-						intVar, _ := strconv.Atoi(els[0])
-						newitem := Object{
-							Name:        els[1],
-							Size:        intVar,
-							Path:        Root.CurrentPath + els[1],
-							IsDirectory: false,
-						}
-						Root.Entries = append(Root.Entries, newitem)
-					}
-
+		if len(line) > 0 {
+			if string(line[0]) == "$" {
+				fmt.Println("Command")
+				if string(line[2:4]) == "cd" {
+					fmt.Println("Change Directory")
+					Root.CD(line[5:])
+					fmt.Println(Root.CurrentPath)
 				}
+			} else {
+				fmt.Println("File")
+				var newVal Object
+				els := strings.Split(line, " ")
+				if string(line[0]) == "d" {
+					newVal = Object{
+						Name:        els[1],
+						Size:        0,
+						Path:        Root.CurrentPath,
+						IsDirectory: true,
+					}
+				} else {
+
+					fs, _ := strconv.Atoi(els[0])
+					newVal = Object{
+						Name:        els[1],
+						Size:        fs,
+						Path:        Root.CurrentPath,
+						IsDirectory: false,
+					}
+				}
+				Root.Entries = append(Root.Entries, newVal)
+
+			}
+		}
+
+	}
+	totfs := 0
+	for _, v := range Root.Entries {
+		//fmt.Println( v.Name, v.Size, v.Path)
+		fmt.Println(v.Path+"-"+v.Name, " DIR?", v.IsDirectory)
+		totfs = totfs + v.Size
+	}
+	fmt.Println(totfs)
+	var selfs int
+	for _, v := range Root.Entries {
+		if v.IsDirectory {
+			fmt.Println(v.Path+v.Name, " DIR?", v.IsDirectory)
+			if v.Name != "" {
+				v.Name = v.Name + "/"
+			}
+			fs := Root.sizeofcontents(v.Path + v.Name)
+			fmt.Println(fs)
+			if fs <= 100000 {
+				selfs = selfs + fs
 			}
 
 		}
-		if line != "$" && string(line[:4]) == "$ cd" {
-			fmt.Println("Change Directory to", string(line[5:]))
-			Root.CD(string(line[5:]))
-			fmt.Println("Current Directory :", Root.CurrentPath)
-		}
+		//fmt.Println( v.Name, v.Size, v.Path)
 
 	}
-	for _, v := range Root.Entries {
-		//fmt.Println( v.Name, v.Size, v.Path)
-		fmt.Println(v.Path)
-	}
+	fmt.Println(selfs)
+
 }
