@@ -122,7 +122,7 @@ func main() {
 		fmt.Println(v.Path+"-"+v.Name, " DIR?", v.IsDirectory)
 		totfs = totfs + v.Size
 	}
-	fmt.Println(totfs)
+	fmt.Println("Total Files", totfs)
 	var selfs int
 	for _, v := range Root.Entries {
 		if v.IsDirectory {
@@ -141,5 +141,34 @@ func main() {
 
 	}
 	fmt.Println(selfs)
+
+	// Part 2
+	// We'll repeat the scan above but pop the results into a map of the path and the size
+	const TotalCapacity = 70000000
+	const CapacityRequired = 30000000
+	var CapacityAvailable = TotalCapacity - totfs
+	fmt.Println("Available Capacity", CapacityAvailable)
+	var SpaceNeeded = CapacityRequired - CapacityAvailable
+	fmt.Println(SpaceNeeded)
+	var CandidateDirName string
+	var CandidateDirSize int = totfs
+	for _, v := range Root.Entries {
+		if v.IsDirectory {
+			fmt.Println(v.Path+v.Name, " DIR?", v.IsDirectory)
+			if v.Name != "" {
+				v.Name = v.Name + "/"
+			}
+			fs := Root.sizeofcontents(v.Path + v.Name)
+			if fs > SpaceNeeded && fs < CandidateDirSize {
+				CandidateDirSize = fs
+				CandidateDirName = v.Path + v.Name
+			}
+
+		}
+		//fmt.Println( v.Name, v.Size, v.Path)
+
+	}
+	fmt.Println("Dirname", CandidateDirName)
+	fmt.Println("Dir Size", CandidateDirSize)
 
 }
