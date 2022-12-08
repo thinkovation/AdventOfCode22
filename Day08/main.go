@@ -23,6 +23,38 @@ func (t Tree) IsVisble() bool {
 	}
 	return false
 }
+func GetScore(r, c int) int {
+
+	toTheLeft := 0
+	for i := c - 1; i >= 0; i-- {
+		toTheLeft++
+		if grid[r][i].Height >= grid[r][c].Height {
+			break
+		}
+	}
+	toTheRight := 0
+	for i := c + 1; i < len(grid[r]); i++ {
+		toTheRight++
+		if grid[r][i].Height >= grid[r][c].Height {
+			break
+		}
+	}
+	toTheTop := 0
+	for i := r - 1; i > 0; i-- {
+		toTheTop++
+		if grid[i][c].Height >= grid[r][c].Height {
+			break
+		}
+	}
+	toTheBottom := 0
+	for i := r + 1; i < len(grid[r]); i++ {
+		toTheBottom++
+		if grid[i][c].Height >= grid[r][c].Height {
+			break
+		}
+	}
+	return toTheLeft * toTheRight * toTheBottom * toTheTop
+}
 func main() {
 	fname := "input.txt"
 	//fname := "exampleinput.txt"
@@ -77,17 +109,28 @@ func main() {
 			if grid[numcols-c][r].Height > maxFromB {
 				maxFromB = grid[numcols-c][r].Height
 				grid[numcols-c][r].VisibleFromBottom = true
-			
+
+			}
 		}
-	}
-	for _, v := range grid {
-		for _, v2 := range v {
-			if v2.IsVisble() {
-				visCount++
+		for _, v := range grid {
+			for _, v2 := range v {
+				if v2.IsVisble() {
+					visCount++
+				}
 			}
 		}
 	}
 	fmt.Println("Viscount", visCount)
 	//Part 2
-	
+	maxScore := 0
+	for r := 0; r < len(grid); r++ {
+		numcols := len(grid[r]) - 1
+		for c := 0; c <= numcols; c++ {
+			thisscore := GetScore(r, c)
+			if thisscore > maxScore {
+				maxScore = thisscore
+			}
+		}
+	}
+	fmt.Println("Done - Max Score :", maxScore)
 }
